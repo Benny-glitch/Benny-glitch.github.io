@@ -20,7 +20,7 @@
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link
-            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Silkscreen&display=swap"
             rel="stylesheet"
         />
         <script>
@@ -48,6 +48,13 @@
                 --chip-fg: #ffffff;
                 --dot: rgba(0, 0, 0, 0.07);
                 --ok: #16a34a;
+                --accent: #6d4aff;
+                --spot: rgba(109, 74, 255, 0.07);
+                --pixel-base: rgba(0, 0, 0, 0.045);
+                --pixel-1: #0a0a0a;
+                --pixel-2: #6d4aff;
+                --pixel-3: #ff7a45;
+                --pixel-max: 0.42;
                 --shadow:
                     0 1px 2px rgba(0, 0, 0, 0.04),
                     0 4px 16px rgba(0, 0, 0, 0.04);
@@ -71,6 +78,13 @@
                     --chip-fg: #0a0a0a;
                     --dot: rgba(255, 255, 255, 0.07);
                     --ok: #22c55e;
+                    --accent: #a08cff;
+                    --spot: rgba(160, 140, 255, 0.08);
+                    --pixel-base: rgba(255, 255, 255, 0.05);
+                    --pixel-1: #f2f2f2;
+                    --pixel-2: #a08cff;
+                    --pixel-3: #ff8a5c;
+                    --pixel-max: 0.5;
                     --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
                     --dock-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
                     color-scheme: dark;
@@ -88,6 +102,13 @@
                 --chip-fg: #0a0a0a;
                 --dot: rgba(255, 255, 255, 0.07);
                 --ok: #22c55e;
+                --accent: #a08cff;
+                --spot: rgba(160, 140, 255, 0.08);
+                --pixel-base: rgba(255, 255, 255, 0.05);
+                --pixel-1: #f2f2f2;
+                --pixel-2: #a08cff;
+                --pixel-3: #ff8a5c;
+                --pixel-max: 0.5;
                 --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
                 --dock-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
                 color-scheme: dark;
@@ -117,27 +138,44 @@
                     color 0.3s ease;
             }
             ::selection {
-                background: var(--fg);
-                color: var(--bg);
+                background: var(--accent);
+                color: #fff;
             }
             a:focus-visible,
             button:focus-visible {
-                outline: 2px solid var(--fg);
+                outline: 2px solid var(--accent);
                 outline-offset: 3px;
                 border-radius: 8px;
             }
 
-            /* Subtle dotted backdrop behind the hero */
-            .backdrop {
-                position: absolute;
-                inset: 0 0 auto 0;
-                height: 520px;
-                background-image: radial-gradient(var(--dot) 1px, transparent 1px);
-                background-size: 22px 22px;
-                -webkit-mask-image: linear-gradient(to bottom, #000 0%, transparent 100%);
-                mask-image: linear-gradient(to bottom, #000 0%, transparent 100%);
+            /* Interactive pixel grid background */
+            .pixel-bg {
+                position: fixed;
+                inset: 0;
+                width: 100%;
+                height: 100%;
+                z-index: 0;
                 pointer-events: none;
-                z-index: -1;
+                /* Dimmer behind the reading column, brighter on the sides */
+                -webkit-mask-image: linear-gradient(
+                    90deg,
+                    #000 0%,
+                    rgba(0, 0, 0, 0.5) calc(50% - 320px),
+                    rgba(0, 0, 0, 0.5) calc(50% + 320px),
+                    #000 100%
+                );
+                mask-image: linear-gradient(
+                    90deg,
+                    #000 0%,
+                    rgba(0, 0, 0, 0.5) calc(50% - 320px),
+                    rgba(0, 0, 0, 0.5) calc(50% + 320px),
+                    #000 100%
+                );
+            }
+            main,
+            footer {
+                position: relative;
+                z-index: 1;
             }
 
             /* Reveal: blur + fade, staggered on load, then on scroll */
@@ -994,61 +1032,71 @@
             }
 
 
-            /* Custom cursor: dot + trailing ring (fine pointers only) */
-            .cursor-dot,
-            .cursor-ring {
-                position: fixed;
-                top: 0;
-                left: 0;
-                border-radius: 50%;
-                pointer-events: none;
-                z-index: 1000;
-                opacity: 0;
-                background: #fff;
-                mix-blend-mode: difference;
-                transition: opacity 0.25s ease;
-                will-change: transform;
+
+
+            /* Pixel-font eyebrow above section titles */
+            .eyebrow {
+                display: block;
+                font-family: "Silkscreen", "JetBrains Mono", monospace;
+                font-size: 11px;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+                color: var(--accent);
+                margin-bottom: 6px;
             }
-            .cursor-dot {
-                width: 6px;
-                height: 6px;
-                margin: -3px 0 0 -3px;
+
+            /* Cursor spotlight on cards */
+            .item,
+            .repo-list,
+            .lang-card,
+            .contact-list a {
+                background-image: radial-gradient(
+                    280px circle at var(--mx, -500px) var(--my, -500px),
+                    var(--spot),
+                    transparent 70%
+                );
             }
-            .cursor-ring {
-                width: 36px;
-                height: 36px;
-                margin: -18px 0 0 -18px;
-                background: transparent;
-                border: 1.5px solid #fff;
+            a.item:hover,
+            .lang-card:hover,
+            .contact-list a:hover,
+            .btn:not(.primary):hover {
+                border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
+            }
+            .lang-card {
+                transition: border-color 0.2s ease;
+            }
+            .item .logo {
+                transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+            }
+            a.item:hover .logo {
+                transform: scale(1.06) rotate(-3deg);
+            }
+            .repo:hover .repo-name {
+                color: var(--accent);
+            }
+            .skill {
                 transition:
-                    opacity 0.25s ease,
-                    width 0.25s ease,
-                    height 0.25s ease,
-                    margin 0.25s ease,
-                    background 0.25s ease;
+                    transform 0.2s ease,
+                    background 0.2s ease,
+                    color 0.2s ease;
             }
-            .has-cursor .cursor-dot,
-            .has-cursor .cursor-ring {
-                opacity: 1;
+            .skill:hover {
+                background: var(--accent);
+                color: #fff;
             }
-            .has-cursor.cursor-hidden .cursor-dot,
-            .has-cursor.cursor-hidden .cursor-ring {
-                opacity: 0;
+            .tag {
+                transition:
+                    border-color 0.2s ease,
+                    color 0.2s ease;
             }
-            .cursor-ring.hover {
-                width: 56px;
-                height: 56px;
-                margin: -28px 0 0 -28px;
-                background: #fff;
+            a.item:hover .tag {
+                border-color: color-mix(in srgb, var(--accent) 35%, var(--line));
             }
-            .cursor-ring.down {
-                width: 26px;
-                height: 26px;
-                margin: -13px 0 0 -13px;
-            }
-            .has-cursor,
-            .has-cursor * {
-                cursor: none !important;
+            .hero h1 .name {
+                background: linear-gradient(90deg, var(--fg) 40%, var(--accent));
+                -webkit-background-clip: text;
+                background-clip: text;
+                color: transparent;
             }
 
             @media (prefers-reduced-motion: reduce) {
@@ -1070,9 +1118,8 @@
         </style>
     </head>
     <body>
+        <canvas class="pixel-bg" aria-hidden="true"></canvas>
         <div class="page-fade" aria-hidden="true"></div>
-        <div class="cursor-ring" aria-hidden="true"></div>
-        <div class="cursor-dot" aria-hidden="true"></div>
 
         <header>
             <nav aria-label="Main navigation">
@@ -1156,12 +1203,11 @@
         </svg>
 
         <main>
-            <div class="backdrop" aria-hidden="true"></div>
 
             <section class="hero reveal" id="home" style="--d: 0.05s">
                 <div class="hero-text">
                     <span class="status"><span class="pulse"></span>Software Engineer @ BB-Smile</span>
-                    <h1>Hi, I'm Benedetto <span class="wave">👋</span></h1>
+                    <h1>Hi, I'm <span class="name">Benedetto</span> <span class="wave">👋</span></h1>
                     <p class="tagline">
                         Junior Software Engineer building full-stack platforms on top of the
                         blockchain. <span class="muted">Java, Spring Boot and Angular by day — interpreters
@@ -1204,6 +1250,7 @@
             </section>
 
             <section id="about" class="reveal" style="--d: 0.2s">
+                <span class="eyebrow">01 / about</span>
                 <h2>About</h2>
                 <p class="about-text">
                     Hey! I'm Benedetto, a Software Engineer at
@@ -1221,6 +1268,7 @@
             </section>
 
             <section id="experience" class="reveal" style="--d: 0.35s">
+                <span class="eyebrow">02 / experience</span>
                 <h2>Work Experience</h2>
 
                 <a class="item" href="https://bb-smile.net/" target="_blank" rel="noopener">
@@ -1279,6 +1327,7 @@
             </section>
 
             <section id="education" class="reveal">
+                <span class="eyebrow">03 / education</span>
                 <h2>Education</h2>
 
                 <a
@@ -1310,6 +1359,7 @@
             </section>
 
             <section id="projects" class="reveal">
+                <span class="eyebrow">04 / projects</span>
                 <h2>Projects</h2>
 
                 <div class="grid">
@@ -1401,6 +1451,7 @@
             </section>
 
             <section id="repos" class="reveal">
+                <span class="eyebrow">05 / open source</span>
                 <div class="section-head">
                     <h2>Open Source</h2>
                     <a class="section-link" href="https://github.com/Benny-glitch?tab=repositories" target="_blank" rel="noopener">
@@ -1433,6 +1484,7 @@
             </section>
 
             <section id="skills" class="reveal">
+                <span class="eyebrow">06 / skills</span>
                 <h2>Skills</h2>
                 <div class="skill-groups">
                     <div class="skill-group">
@@ -1490,6 +1542,7 @@
             </section>
 
             <section id="languages" class="reveal">
+                <span class="eyebrow">07 / languages</span>
                 <h2>Languages</h2>
                 <div class="langs">
                     <div class="lang-card">
@@ -1517,6 +1570,7 @@
             </section>
 
             <section id="contact" class="reveal">
+                <span class="eyebrow">08 / contact</span>
                 <h2>Contact</h2>
                 <p class="contact-intro">
                     Open to new opportunities, collaborations and a good tech chat. The fastest way to
@@ -1706,48 +1760,170 @@
             });
 
 
-            // Custom cursor: dot follows the pointer, ring trails it and grows on links
-            (function () {
-                const fine = window.matchMedia("(hover: hover) and (pointer: fine)");
-                const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
-                if (!fine.matches || reduce.matches) return;
-                const dot = document.querySelector(".cursor-dot");
-                const ring = document.querySelector(".cursor-ring");
-                const html = document.documentElement;
-                let x = -100, y = -100, rx = -100, ry = -100, running = false;
 
-                function tick() {
-                    rx += (x - rx) * 0.18;
-                    ry += (y - ry) * 0.18;
-                    ring.style.transform = `translate3d(${rx}px, ${ry}px, 0)`;
-                    if (Math.abs(x - rx) > 0.1 || Math.abs(y - ry) > 0.1) {
-                        requestAnimationFrame(tick);
-                    } else {
-                        running = false;
+
+            // Interactive pixel grid: pixels light up around the pointer,
+            // a click sends a ripple, and a few pixels twinkle on their own.
+            (function () {
+                const canvas = document.querySelector(".pixel-bg");
+                const ctx = canvas.getContext("2d");
+                if (!ctx) return;
+                const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
+                const CELL = 18;
+                const SIZE = 12;
+                const RADIUS = 120;
+                let w, h, dpr, cols, rows, ox, oy, energy, hue, colors, maxA;
+                const active = new Set();
+                const ripples = [];
+                const base = document.createElement("canvas");
+                const bctx = base.getContext("2d");
+                let px = null, py = null, raf = null;
+
+                function readColors() {
+                    const cs = getComputedStyle(document.documentElement);
+                    const v = (n) => cs.getPropertyValue(n).trim();
+                    colors = { base: v("--pixel-base"), palette: [v("--pixel-1"), v("--pixel-2"), v("--pixel-3")] };
+                    maxA = parseFloat(v("--pixel-max")) || 0.45;
+                }
+                function drawBase() {
+                    base.width = w * dpr;
+                    base.height = h * dpr;
+                    bctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                    bctx.clearRect(0, 0, w, h);
+                    bctx.fillStyle = colors.base;
+                    for (let r = 0; r < rows; r++)
+                        for (let c = 0; c < cols; c++) bctx.fillRect(ox + c * CELL, oy + r * CELL, SIZE, SIZE);
+                }
+                function resize() {
+                    dpr = Math.min(window.devicePixelRatio || 1, 2);
+                    w = window.innerWidth;
+                    h = window.innerHeight;
+                    canvas.width = w * dpr;
+                    canvas.height = h * dpr;
+                    cols = Math.ceil(w / CELL) + 1;
+                    rows = Math.ceil(h / CELL) + 1;
+                    ox = Math.round(((w % CELL) - CELL + (CELL - SIZE)) / 2);
+                    oy = Math.round(((h % CELL) - CELL + (CELL - SIZE)) / 2);
+                    energy = new Float32Array(cols * rows);
+                    // Mostly neutral pixels, some accent, a few warm ones
+                    hue = Uint8Array.from({ length: cols * rows }, () => {
+                        const r = Math.random();
+                        return r < 0.55 ? 0 : r < 0.88 ? 1 : 2;
+                    });
+                    active.clear();
+                    readColors();
+                    drawBase();
+                    draw();
+                }
+                function light(c, r, v) {
+                    if (c < 0 || r < 0 || c >= cols || r >= rows) return;
+                    const i = r * cols + c;
+                    if (v > energy[i]) {
+                        energy[i] = v;
+                        active.add(i);
                     }
                 }
-                window.addEventListener("mousemove", (e) => {
-                    x = e.clientX;
-                    y = e.clientY;
-                    if (!html.classList.contains("has-cursor")) {
-                        rx = x;
-                        ry = y;
-                        html.classList.add("has-cursor");
+                function lightAround(x, y, radius, fn) {
+                    const c0 = Math.floor((x - ox - radius) / CELL), c1 = Math.ceil((x - ox + radius) / CELL);
+                    const r0 = Math.floor((y - oy - radius) / CELL), r1 = Math.ceil((y - oy + radius) / CELL);
+                    for (let r = r0; r <= r1; r++)
+                        for (let c = c0; c <= c1; c++) {
+                            const d = Math.hypot(ox + c * CELL + SIZE / 2 - x, oy + r * CELL + SIZE / 2 - y);
+                            const v = fn(d);
+                            if (v > 0) light(c, r, v);
+                        }
+                }
+                function draw() {
+                    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                    ctx.clearRect(0, 0, w, h);
+                    ctx.drawImage(base, 0, 0, w, h);
+                    active.forEach((i) => {
+                        const e = energy[i];
+                        const c = i % cols, r = (i / cols) | 0;
+                        const s = SIZE * (0.7 + 0.3 * e);
+                        const off = (SIZE - s) / 2;
+                        ctx.globalAlpha = e * maxA;
+                        ctx.fillStyle = colors.palette[hue[i]];
+                        ctx.fillRect(ox + c * CELL + off, oy + r * CELL + off, s, s);
+                    });
+                    ctx.globalAlpha = 1;
+                }
+                function frame() {
+                    raf = null;
+                    if (document.hidden) return;
+                    if (px !== null) {
+                        lightAround(px, py, RADIUS, (d) => (d < RADIUS ? Math.pow(1 - d / RADIUS, 1.6) * (0.55 + Math.random() * 0.45) : 0));
                     }
-                    html.classList.remove("cursor-hidden");
-                    dot.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-                    if (!running) {
-                        running = true;
-                        requestAnimationFrame(tick);
+                    for (let k = ripples.length - 1; k >= 0; k--) {
+                        const rp = ripples[k];
+                        rp.r += 7;
+                        const fade = 1 - rp.r / rp.max;
+                        if (fade <= 0) {
+                            ripples.splice(k, 1);
+                            continue;
+                        }
+                        lightAround(rp.x, rp.y, rp.r, (d) => (Math.abs(d - rp.r) < CELL ? fade : 0));
                     }
+                    if (Math.random() < 0.25) {
+                        light((Math.random() * cols) | 0, (Math.random() * rows) | 0, 0.3 + Math.random() * 0.4);
+                    }
+                    active.forEach((i) => {
+                        energy[i] *= 0.93;
+                        if (energy[i] < 0.02) {
+                            energy[i] = 0;
+                            active.delete(i);
+                        }
+                    });
+                    draw();
+                    raf = requestAnimationFrame(frame);
+                }
+                function start() {
+                    if (reduce.matches) {
+                        active.clear();
+                        draw();
+                        return;
+                    }
+                    if (!raf) raf = requestAnimationFrame(frame);
+                }
+
+                window.addEventListener("resize", resize);
+                window.addEventListener("pointermove", (e) => {
+                    if (e.pointerType !== "mouse") return;
+                    px = e.clientX;
+                    py = e.clientY;
                 });
-                document.addEventListener("mouseover", (e) => {
-                    ring.classList.toggle("hover", !!e.target.closest("a, button"));
+                document.addEventListener("mouseleave", () => (px = py = null));
+                window.addEventListener("pointerdown", (e) => {
+                    if (reduce.matches) return;
+                    ripples.push({ x: e.clientX, y: e.clientY, r: 0, max: 420 });
+                    if (ripples.length > 4) ripples.shift();
                 });
-                document.addEventListener("mouseleave", () => html.classList.add("cursor-hidden"));
-                window.addEventListener("mousedown", () => ring.classList.add("down"));
-                window.addEventListener("mouseup", () => ring.classList.remove("down"));
+                document.addEventListener("visibilitychange", start);
+                reduce.addEventListener?.("change", start);
+                // Repaint the base grid when the theme changes
+                const recolor = () => {
+                    readColors();
+                    drawBase();
+                    draw();
+                };
+                new MutationObserver(recolor).observe(document.documentElement, {
+                    attributes: true,
+                    attributeFilter: ["data-theme"],
+                });
+                window.matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", recolor);
+
+                resize();
+                start();
             })();
+
+            // Spotlight that follows the pointer inside cards
+            document.addEventListener("pointermove", (e) => {
+                const card = e.target.closest?.(".item, .repo-list, .lang-card, .contact-list a");
+                if (!card) return;
+                const r = card.getBoundingClientRect();
+                card.style.setProperty("--mx", e.clientX - r.left + "px");
+                card.style.setProperty("--my", e.clientY - r.top + "px");
+            });
 
             // Live repository listing: refresh the static list with GitHub data.
             // If the request fails (offline, rate limit) the static list stays as is.
