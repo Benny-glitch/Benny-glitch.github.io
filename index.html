@@ -993,6 +993,64 @@
                 }
             }
 
+
+            /* Custom cursor: dot + trailing ring (fine pointers only) */
+            .cursor-dot,
+            .cursor-ring {
+                position: fixed;
+                top: 0;
+                left: 0;
+                border-radius: 50%;
+                pointer-events: none;
+                z-index: 1000;
+                opacity: 0;
+                background: #fff;
+                mix-blend-mode: difference;
+                transition: opacity 0.25s ease;
+                will-change: transform;
+            }
+            .cursor-dot {
+                width: 6px;
+                height: 6px;
+                margin: -3px 0 0 -3px;
+            }
+            .cursor-ring {
+                width: 36px;
+                height: 36px;
+                margin: -18px 0 0 -18px;
+                background: transparent;
+                border: 1.5px solid #fff;
+                transition:
+                    opacity 0.25s ease,
+                    width 0.25s ease,
+                    height 0.25s ease,
+                    margin 0.25s ease,
+                    background 0.25s ease;
+            }
+            .has-cursor .cursor-dot,
+            .has-cursor .cursor-ring {
+                opacity: 1;
+            }
+            .has-cursor.cursor-hidden .cursor-dot,
+            .has-cursor.cursor-hidden .cursor-ring {
+                opacity: 0;
+            }
+            .cursor-ring.hover {
+                width: 56px;
+                height: 56px;
+                margin: -28px 0 0 -28px;
+                background: #fff;
+            }
+            .cursor-ring.down {
+                width: 26px;
+                height: 26px;
+                margin: -13px 0 0 -13px;
+            }
+            .has-cursor,
+            .has-cursor * {
+                cursor: none !important;
+            }
+
             @media (prefers-reduced-motion: reduce) {
                 html {
                     scroll-behavior: auto;
@@ -1013,6 +1071,8 @@
     </head>
     <body>
         <div class="page-fade" aria-hidden="true"></div>
+        <div class="cursor-ring" aria-hidden="true"></div>
+        <div class="cursor-dot" aria-hidden="true"></div>
 
         <header>
             <nav aria-label="Main navigation">
@@ -1344,7 +1404,7 @@
                 <div class="section-head">
                     <h2>Open Source</h2>
                     <a class="section-link" href="https://github.com/Benny-glitch?tab=repositories" target="_blank" rel="noopener">
-                        <span id="repo-count">7 public repos</span> →
+                        <span id="repo-count">4 public repos</span> →
                     </a>
                 </div>
 
@@ -1368,21 +1428,6 @@
                         <span class="repo-name"><span class="owner">Benny-glitch/</span>DarkDepths <span class="arrow">↗</span></span>
                         <span class="repo-meta"><span class="lang" style="--c: #178600">C#</span><span class="stars"></span><span class="updated">2024</span></span>
                         <span class="repo-desc">2D dungeon crawler made in Unity: exploration, combat and enemy management, with custom graphics.</span>
-                    </a>
-                    <a class="repo" data-repo="doomai_gym" href="https://github.com/Benny-glitch/doomAI_GYM" target="_blank" rel="noopener">
-                        <span class="repo-name"><span class="owner">Benny-glitch/</span>doomAI_GYM <span class="arrow">↗</span></span>
-                        <span class="repo-meta"><span class="lang" style="--c: #3572a5">Python</span><span class="stars"></span><span class="updated">2024</span></span>
-                        <span class="repo-desc">Reinforcement learning agent in PyTorch, trained with OpenAI Gym on custom DOOM levels.</span>
-                    </a>
-                    <a class="repo" data-repo="automatedsd-testa-galgliardi" href="https://github.com/Benny-glitch/AutomatedSD-Testa-Galgliardi" target="_blank" rel="noopener">
-                        <span class="repo-name"><span class="owner">Benny-glitch/</span>AutomatedSD-Testa-Galgliardi <span class="arrow">↗</span></span>
-                        <span class="repo-meta"><span class="lang" style="--c: #3572a5">Python</span><span class="stars"></span><span class="updated">2024</span></span>
-                        <span class="repo-desc">University project: automated static analysis of Apache Cassandra's Java code with SpotBugs.</span>
-                    </a>
-                    <a class="repo" data-repo="monopoly" href="https://github.com/Benny-glitch/Monopoly" target="_blank" rel="noopener">
-                        <span class="repo-name"><span class="owner">Benny-glitch/</span>Monopoly <span class="arrow">↗</span></span>
-                        <span class="repo-meta"><span class="lang" style="--c: #b07219">Java</span><span class="stars"></span><span class="updated">2023</span></span>
-                        <span class="repo-desc">Monopoly board game as a Java Swing desktop app, with player setup, turns and scoreboard.</span>
                     </a>
                 </div>
             </section>
@@ -1660,11 +1705,61 @@
                 });
             });
 
+
+            // Custom cursor: dot follows the pointer, ring trails it and grows on links
+            (function () {
+                const fine = window.matchMedia("(hover: hover) and (pointer: fine)");
+                const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
+                if (!fine.matches || reduce.matches) return;
+                const dot = document.querySelector(".cursor-dot");
+                const ring = document.querySelector(".cursor-ring");
+                const html = document.documentElement;
+                let x = -100, y = -100, rx = -100, ry = -100, running = false;
+
+                function tick() {
+                    rx += (x - rx) * 0.18;
+                    ry += (y - ry) * 0.18;
+                    ring.style.transform = `translate3d(${rx}px, ${ry}px, 0)`;
+                    if (Math.abs(x - rx) > 0.1 || Math.abs(y - ry) > 0.1) {
+                        requestAnimationFrame(tick);
+                    } else {
+                        running = false;
+                    }
+                }
+                window.addEventListener("mousemove", (e) => {
+                    x = e.clientX;
+                    y = e.clientY;
+                    if (!html.classList.contains("has-cursor")) {
+                        rx = x;
+                        ry = y;
+                        html.classList.add("has-cursor");
+                    }
+                    html.classList.remove("cursor-hidden");
+                    dot.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+                    if (!running) {
+                        running = true;
+                        requestAnimationFrame(tick);
+                    }
+                });
+                document.addEventListener("mouseover", (e) => {
+                    ring.classList.toggle("hover", !!e.target.closest("a, button"));
+                });
+                document.addEventListener("mouseleave", () => html.classList.add("cursor-hidden"));
+                window.addEventListener("mousedown", () => ring.classList.add("down"));
+                window.addEventListener("mouseup", () => ring.classList.remove("down"));
+            })();
+
             // Live repository listing: refresh the static list with GitHub data.
             // If the request fails (offline, rate limit) the static list stays as is.
             (function () {
                 const USER = "Benny-glitch";
-                const SKIP = new Set(["benny-glitch.github.io", "benny-glitch"]);
+                const SKIP = new Set([
+                    "benny-glitch.github.io",
+                    "benny-glitch",
+                    "monopoly",
+                    "automatedsd-testa-galgliardi",
+                    "doomai_gym",
+                ]);
                 const COLORS = {
                     Java: "#b07219", Rust: "#dea584", Python: "#3572a5", "C#": "#178600",
                     Haskell: "#5e5086", Dart: "#00b4ab", TypeScript: "#3178c6",
