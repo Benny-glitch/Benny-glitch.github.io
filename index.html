@@ -50,11 +50,9 @@
                 --ok: #16a34a;
                 --accent: #6d4aff;
                 --spot: rgba(109, 74, 255, 0.07);
-                --pixel-base: rgba(0, 0, 0, 0.045);
-                --pixel-1: #0a0a0a;
-                --pixel-2: #6d4aff;
-                --pixel-3: #ff7a45;
-                --pixel-max: 0.42;
+                --pixel-base: rgba(0, 0, 0, 0.028);
+                --pixel-lit: #0a0a0a;
+                --pixel-max: 0.14;
                 --shadow:
                     0 1px 2px rgba(0, 0, 0, 0.04),
                     0 4px 16px rgba(0, 0, 0, 0.04);
@@ -80,11 +78,9 @@
                     --ok: #22c55e;
                     --accent: #a08cff;
                     --spot: rgba(160, 140, 255, 0.08);
-                    --pixel-base: rgba(255, 255, 255, 0.05);
-                    --pixel-1: #f2f2f2;
-                    --pixel-2: #a08cff;
-                    --pixel-3: #ff8a5c;
-                    --pixel-max: 0.5;
+                    --pixel-base: rgba(255, 255, 255, 0.03);
+                    --pixel-lit: #f2f2f2;
+                    --pixel-max: 0.16;
                     --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
                     --dock-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
                     color-scheme: dark;
@@ -104,11 +100,9 @@
                 --ok: #22c55e;
                 --accent: #a08cff;
                 --spot: rgba(160, 140, 255, 0.08);
-                --pixel-base: rgba(255, 255, 255, 0.05);
-                --pixel-1: #f2f2f2;
-                --pixel-2: #a08cff;
-                --pixel-3: #ff8a5c;
-                --pixel-max: 0.5;
+                --pixel-base: rgba(255, 255, 255, 0.03);
+                --pixel-lit: #f2f2f2;
+                --pixel-max: 0.16;
                 --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
                 --dock-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
                 color-scheme: dark;
@@ -160,15 +154,15 @@
                 -webkit-mask-image: linear-gradient(
                     90deg,
                     #000 0%,
-                    rgba(0, 0, 0, 0.5) calc(50% - 320px),
-                    rgba(0, 0, 0, 0.5) calc(50% + 320px),
+                    rgba(0, 0, 0, 0.25) calc(50% - 320px),
+                    rgba(0, 0, 0, 0.25) calc(50% + 320px),
                     #000 100%
                 );
                 mask-image: linear-gradient(
                     90deg,
                     #000 0%,
-                    rgba(0, 0, 0, 0.5) calc(50% - 320px),
-                    rgba(0, 0, 0, 0.5) calc(50% + 320px),
+                    rgba(0, 0, 0, 0.25) calc(50% - 320px),
+                    rgba(0, 0, 0, 0.25) calc(50% + 320px),
                     #000 100%
                 );
             }
@@ -1092,12 +1086,6 @@
             a.item:hover .tag {
                 border-color: color-mix(in srgb, var(--accent) 35%, var(--line));
             }
-            .hero h1 .name {
-                background: linear-gradient(90deg, var(--fg) 40%, var(--accent));
-                -webkit-background-clip: text;
-                background-clip: text;
-                color: transparent;
-            }
 
             @media (prefers-reduced-motion: reduce) {
                 html {
@@ -1207,7 +1195,7 @@
             <section class="hero reveal" id="home" style="--d: 0.05s">
                 <div class="hero-text">
                     <span class="status"><span class="pulse"></span>Software Engineer @ BB-Smile</span>
-                    <h1>Hi, I'm <span class="name">Benedetto</span> <span class="wave">👋</span></h1>
+                    <h1>Hi, I'm Benedetto <span class="wave">👋</span></h1>
                     <p class="tagline">
                         Junior Software Engineer building full-stack platforms on top of the
                         blockchain. <span class="muted">Java, Spring Boot and Angular by day — interpreters
@@ -1769,10 +1757,10 @@
                 const ctx = canvas.getContext("2d");
                 if (!ctx) return;
                 const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
-                const CELL = 18;
-                const SIZE = 12;
-                const RADIUS = 120;
-                let w, h, dpr, cols, rows, ox, oy, energy, hue, colors, maxA;
+                const CELL = 20;
+                const SIZE = 3;
+                const RADIUS = 160;
+                let w, h, dpr, cols, rows, ox, oy, energy, colors, maxA;
                 const active = new Set();
                 const ripples = [];
                 const base = document.createElement("canvas");
@@ -1782,7 +1770,7 @@
                 function readColors() {
                     const cs = getComputedStyle(document.documentElement);
                     const v = (n) => cs.getPropertyValue(n).trim();
-                    colors = { base: v("--pixel-base"), palette: [v("--pixel-1"), v("--pixel-2"), v("--pixel-3")] };
+                    colors = { base: v("--pixel-base"), lit: v("--pixel-lit") };
                     maxA = parseFloat(v("--pixel-max")) || 0.45;
                 }
                 function drawBase() {
@@ -1805,11 +1793,6 @@
                     ox = Math.round(((w % CELL) - CELL + (CELL - SIZE)) / 2);
                     oy = Math.round(((h % CELL) - CELL + (CELL - SIZE)) / 2);
                     energy = new Float32Array(cols * rows);
-                    // Mostly neutral pixels, some accent, a few warm ones
-                    hue = Uint8Array.from({ length: cols * rows }, () => {
-                        const r = Math.random();
-                        return r < 0.55 ? 0 : r < 0.88 ? 1 : 2;
-                    });
                     active.clear();
                     readColors();
                     drawBase();
@@ -1840,10 +1823,10 @@
                     active.forEach((i) => {
                         const e = energy[i];
                         const c = i % cols, r = (i / cols) | 0;
-                        const s = SIZE * (0.7 + 0.3 * e);
+                        const s = SIZE * (1 + e);
                         const off = (SIZE - s) / 2;
                         ctx.globalAlpha = e * maxA;
-                        ctx.fillStyle = colors.palette[hue[i]];
+                        ctx.fillStyle = colors.lit;
                         ctx.fillRect(ox + c * CELL + off, oy + r * CELL + off, s, s);
                     });
                     ctx.globalAlpha = 1;
@@ -1852,23 +1835,23 @@
                     raf = null;
                     if (document.hidden) return;
                     if (px !== null) {
-                        lightAround(px, py, RADIUS, (d) => (d < RADIUS ? Math.pow(1 - d / RADIUS, 1.6) * (0.55 + Math.random() * 0.45) : 0));
+                        lightAround(px, py, RADIUS, (d) => (d < RADIUS ? Math.pow(1 - d / RADIUS, 2) : 0));
                     }
                     for (let k = ripples.length - 1; k >= 0; k--) {
                         const rp = ripples[k];
-                        rp.r += 7;
+                        rp.r += 6;
                         const fade = 1 - rp.r / rp.max;
                         if (fade <= 0) {
                             ripples.splice(k, 1);
                             continue;
                         }
-                        lightAround(rp.x, rp.y, rp.r, (d) => (Math.abs(d - rp.r) < CELL ? fade : 0));
+                        lightAround(rp.x, rp.y, rp.r, (d) => (Math.abs(d - rp.r) < CELL ? fade * 0.6 : 0));
                     }
-                    if (Math.random() < 0.25) {
-                        light((Math.random() * cols) | 0, (Math.random() * rows) | 0, 0.3 + Math.random() * 0.4);
+                    if (Math.random() < 0.04) {
+                        light((Math.random() * cols) | 0, (Math.random() * rows) | 0, 0.25 + Math.random() * 0.25);
                     }
                     active.forEach((i) => {
-                        energy[i] *= 0.93;
+                        energy[i] *= 0.95;
                         if (energy[i] < 0.02) {
                             energy[i] = 0;
                             active.delete(i);
@@ -1895,7 +1878,7 @@
                 document.addEventListener("mouseleave", () => (px = py = null));
                 window.addEventListener("pointerdown", (e) => {
                     if (reduce.matches) return;
-                    ripples.push({ x: e.clientX, y: e.clientY, r: 0, max: 420 });
+                    ripples.push({ x: e.clientX, y: e.clientY, r: 0, max: 320 });
                     if (ripples.length > 4) ripples.shift();
                 });
                 document.addEventListener("visibilitychange", start);
